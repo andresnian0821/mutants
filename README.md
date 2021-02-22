@@ -1,5 +1,7 @@
 # MERCADOLIBRE X-MAN PROJECT
 
+El proyecto se ha realizado teniendo en cuenta el documento de requerimientos enviado por correo electronico.
+
 ## Prerequisitos
 
 Necesitas tener instaldo en el computador
@@ -10,6 +12,19 @@ Necesitas tener instaldo en el computador
 [![terraform](https://img.shields.io/badge/terraform%20-%235835CC.svg?&style=for-the-badge&logo=terraform&logoColor=white)](https://www.terraform.io)
 
 ## Ejecucion
+
+* Busqueda de mutantes:
+  Method: POST
+  URL: https://bw5e1gfayg.execute-api.us-east-2.amazonaws.com/dev/mutant
+  Request:
+    {
+      "dna": Array<string>
+    }
+ 
+* Estadisticas de ejecución:
+  Method: GET
+  URL: https://bw5e1gfayg.execute-api.us-east-2.amazonaws.com/dev/stats
+  
 
 ## Cobertura
 Para garantizar la covertura de pruebas unitarias se uso SonarQube.
