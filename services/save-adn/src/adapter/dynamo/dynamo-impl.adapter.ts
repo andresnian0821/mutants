@@ -1,15 +1,15 @@
 import { injectable } from "inversify";
-import { DynamoService } from "./dynamo.service";
-import * as uuid from 'uuid';
+import { DynamoAdapter } from "./dynamo.adapter";
+import * as uuid from "uuid";
 import { DynamoDB } from "aws-sdk";
 import { DYNAMO_CONST } from "../../utils/constants";
-import { itemType, rowType } from "../../models/dynamo-types";
+import { Request, Response } from "../../models/dynamo-types";
 
 @injectable()
-export class DynamoImplService implements DynamoService {
+export class DynamoImplAdapter implements DynamoAdapter {
   dynamo = new DynamoDB.DocumentClient();
 
-  public save(row: rowType): Promise<itemType> {
+  public save(row: Request): Promise<Response> {
     const params = {
       TableName: DYNAMO_CONST.TABLE,
       Item: {
@@ -22,10 +22,12 @@ export class DynamoImplService implements DynamoService {
       this.dynamo
         .put(params)
         .promise()
-        .then(() => {
+        .then((response) => {
+          console.log(response);
           return resolve(params.Item);
         })
         .catch((err) => {
+          console.log(err);
           return reject(err);
         });
     });

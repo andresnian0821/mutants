@@ -1,5 +1,5 @@
 export const CONTROLLERS = {
-  DiscoverMutantController: Symbol.for("DiscoverMutantController"),
+  SaveAdnController: Symbol.for("SaveAdnController"),
 };
 
 export const UTILS = {
@@ -7,11 +7,11 @@ export const UTILS = {
 };
 
 export const SERVICES = {
-  DiscoverMutantService: Symbol.for("DiscoverMutantService")
+  SaveAdnService: Symbol.for("SaveAdnService")
 };
 
 export const ADAPTERS = {
-  SQSAdapter: Symbol.for("SqsAdapter")
+  DynamoAdapter: Symbol.for("DynamoAdapter")
 }
 
 export const CONSTANTS = {
