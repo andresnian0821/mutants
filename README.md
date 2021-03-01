@@ -9,7 +9,6 @@ Necesitas tener instaldo en el computador
 [![node](https://img.shields.io/badge/node-v12.X-yellow.svg)](https://nodejs.org)
 [![npm](https://img.shields.io/badge/npm-v6.13.X-red.svg)](https://www.npmjs.com/)
 [![typescript](https://img.shields.io/npm/types/typescript)](https://www.typescriptlang.org/)
-[![terraform](https://img.shields.io/badge/terraform%20-%235835CC.svg?&style=for-the-badge&logo=terraform&logoColor=white)](https://www.terraform.io)
 
 ## Ejecucion
 
