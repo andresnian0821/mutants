@@ -1,5 +1,5 @@
 import { DiscoverMutantService } from './discover-mutants.service';
-import { DynamoService } from '../adapter/dynamo/dynamo.service'
+import { SqsAdapter } from '../adapter/sqs/sqs-save-adn.adapter'
 import { CONSTANTS, ADAPTERS } from '../utils/constants';
 import { itemType } from '../models/dynamo-types';
 import { injectable, inject } from 'inversify';
@@ -7,9 +7,9 @@ import { from } from 'rxjs';
 
 @injectable()
 export class DiscoverMutantImplService implements DiscoverMutantService {
-	constructor(@inject(ADAPTERS.DynamoAdapter) private dynamoAdapter: DynamoService) {}
+	constructor(@inject(ADAPTERS.SQSAdapter) private sqsAdapter: SqsAdapter) {}
 
-	isMutant(adn: string[]): Promise<any> {
+	isMutant(adn: string[]): Promise<boolean> {
 		return new Promise((resolve, reject) => {
 			console.log("ADN", adn);
 			let arrayConcat: any[] = [];
@@ -17,30 +17,27 @@ export class DiscoverMutantImplService implements DiscoverMutantService {
 			let ocurrancies = 0;
 			this.createColumnsFromRows(adn)
 				.then((adnColumns: any) => {
-					console.log("1");
 					arrayConcat = arrayConcat.concat(adnColumns);
 					return this.createDiagonalsFromRows(adn);
 				})
-				.then((diagonaladnTop: any) => {
-					console.log("2");
-					arrayConcat = arrayConcat.concat(diagonaladnTop);
+				.then((diagonalAdnTop: any) => {
+					arrayConcat = arrayConcat.concat(diagonalAdnTop);
 					return this.createDiagonalsFromColumns(adn);
 				})
-				.then((diagonaladnBottom: any) => {
-					console.log("3");
-					arrayConcat = arrayConcat.concat(diagonaladnBottom);
+				.then((diagonalAdnBottom: any) => {
+					arrayConcat = arrayConcat.concat(diagonalAdnBottom);
+					console.log(arrayConcat)
 					return this.validateadnArray(arrayConcat);
 				})
 				.then((adnValidation: any) => {
-					console.log("4");
 					ocurrancies = adnValidation;
-					return this.dynamoAdapter.save({
+					return this.sqsAdapter.sendMessage({
 						adn: adn,
 						isMutant: ocurrancies > 1 ? true : false
 					})
 				})
-				.then((responseDynamo: itemType) => {
-					console.log("=====", responseDynamo)
+				.then((responseSqs: itemType) => {
+					console.log("=====", responseSqs)
 					ocurrancies > 1 ? resolve(true) : resolve(false);
 				})
 				.catch((err) => reject(err));
@@ -93,15 +90,22 @@ export class DiscoverMutantImplService implements DiscoverMutantService {
 	private createDiagonalsFromRows(arrayadn: string[]) {
 		return new Promise((resolve, reject) => {
       try {
-        let arrayDiagonalTop = []
+				let arrayDiagonalTop = []
+				let countInverse = arrayadn.length-1;
         for (let idxCol = 0; idxCol < arrayadn.length - 3; idxCol++) {
-          let str = '';
-          let counterIdxCol = idxCol;
+					let strPrin = '';
+					let strSec = '';
+					let counterIdxColPrin = idxCol;
+					let counterIdxColSec = countInverse;
           for (let idxRow = 0; idxRow < arrayadn.length; idxRow++) {
-            str += arrayadn[idxRow].charAt(counterIdxCol)
-            counterIdxCol++;
-          }
-          arrayDiagonalTop.push(str);
+						strPrin += arrayadn[idxRow].charAt(counterIdxColPrin);
+						strSec += arrayadn[idxRow].charAt(counterIdxColSec);
+						counterIdxColPrin++;
+						counterIdxColSec--;
+					}
+					countInverse--;
+					arrayDiagonalTop.push(strPrin);
+					arrayDiagonalTop.push(strSec);
         }
         resolve(arrayDiagonalTop)
 			} catch (error) {
@@ -113,15 +117,21 @@ export class DiscoverMutantImplService implements DiscoverMutantService {
 	private createDiagonalsFromColumns(arrayadn: string[]) {
     return new Promise((resolve, reject) => {
       try {
-        let arrayDiagonalBottom = []
+				let arrayDiagonalBottom = []
+				let countInverse = arrayadn.length-1;
         for (let idxRow = 1; idxRow < arrayadn.length - 3; idxRow++) {
-          let str = '';
-          let counterIdxRow = idxRow;
+          let strPrin = '';
+					let strSec = '';
+					let counterIdxRow = idxRow;
+					let counterIdxRowSec = countInverse;
           for (let idxCol = 0; idxCol < arrayadn.length - idxRow; idxCol++) {
-            str += arrayadn[counterIdxRow].charAt(idxCol)
-            counterIdxRow++;
-          }
-          arrayDiagonalBottom.push(str)
+						strPrin += arrayadn[counterIdxRow].charAt(idxCol)
+						strSec += arrayadn[counterIdxRow].charAt(counterIdxRowSec)
+						counterIdxRow++;
+						counterIdxRowSec--;
+					}
+					arrayDiagonalBottom.push(strPrin)
+					arrayDiagonalBottom.push(strSec)
         }
         resolve(arrayDiagonalBottom);
 			} catch (error) {

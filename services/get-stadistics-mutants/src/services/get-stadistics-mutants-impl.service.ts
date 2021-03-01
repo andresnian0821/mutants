@@ -12,6 +12,7 @@ export class GetStadisticsMutantsImplService implements GetStadisticsMutantsServ
       this.dynamoAdapter
         .get()
         .then((data) => {
+          console.log(data);
           const response = {
             count_mutant_dna: this.getMutants(data),
             count_human_dna: this.getHumans(data),

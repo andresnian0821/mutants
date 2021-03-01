@@ -11,7 +11,7 @@ export const SERVICES = {
 };
 
 export const ADAPTERS = {
-  DynamoAdapter: Symbol.for("DynamoAdapter")
+  SQSAdapter: Symbol.for("SqsAdapter")
 }
 
 export const CONSTANTS = {
