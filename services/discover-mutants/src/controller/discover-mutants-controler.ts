@@ -6,13 +6,28 @@ import { DiscoverMutantService } from "../services/discover-mutants.service";
 import { from } from "rxjs";
 import { Messages } from '../utils/messages';
 
+/**
+ * Class DiscoverMutantController la cual funciona como la fachada de la lambda
+ * @class
+ */
 @injectable()
 export class DiscoverMutantController {
+  /**
+	 * @constructs
+	 * @param [RequestValidator, DiscoverMutantService]
+	 */
   constructor(
     @inject(UTILS.RequestValidator) private requestValidator: RequestValidator,
     @inject(SERVICES.DiscoverMutantService) private discoverMutanService: DiscoverMutantService,
   ) {}
 
+  /**
+	 * Funcion principal del controller para determinar si la cadena es de un mutante o no
+	 * @function eventHandler
+	 * @public
+	 * @param {any} body 
+	 * @returns {Promise<boolean>} true si es mutante false en caso contrario
+	 */
   public eventHandler(body: any): Promise<boolean> {
     console.log("Body in controller ------>", body);
     return new Promise((resolve, reject) => {
@@ -31,6 +46,13 @@ export class DiscoverMutantController {
     });
   }
 
+  /**
+	 * Funcion que valida la longitud de la matriz 
+	 * @function validateMatrixLength
+	 * @private
+	 * @param {string[]} adn 
+	 * @returns {Promise<string[]>} numero de ocurrencias de los string de mutante
+	 */
   private validateMatrixLength(array: string[]): Promise<string[]> {
     return new Promise((resolve, reject) => {
       let lengthRows = array.length;

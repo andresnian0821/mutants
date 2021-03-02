@@ -45,11 +45,7 @@ describe("Index test", () => {
     spyOn(DiscoverMutantController.prototype, "eventHandler").and.returnValue(Promise.reject(response));
 
     handler(eventDataErr).then((result: any) => {
-<<<<<<< HEAD
       expect(result.statusCode).toEqual(StatusCodes.FORBIDDEN);
-=======
-      expect(result.statusCode).toEqual(StatusCodes.NOT_FOUND);
->>>>>>> 303de46f73823ddc3c8263dd6f77ee66e2101d6e
     });
   });
 
@@ -64,11 +60,7 @@ describe("Index test", () => {
     spyOn(DiscoverMutantController.prototype, "eventHandler").and.returnValue(Promise.reject(response));
 
     handler(eventDataIncomplete).then((result: any) => {
-<<<<<<< HEAD
       expect(result.statusCode).toEqual(StatusCodes.FORBIDDEN);
-=======
-      expect(result.statusCode).toEqual(StatusCodes.NOT_FOUND);
->>>>>>> 303de46f73823ddc3c8263dd6f77ee66e2101d6e
     });
   });
 });
