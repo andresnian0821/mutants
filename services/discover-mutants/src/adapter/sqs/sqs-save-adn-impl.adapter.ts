@@ -1,25 +1,28 @@
-import { injectable } from "inversify";
+import { injectable } from 'inversify';
 import { rowType } from '../../models/dynamo-types';
 import { SQS } from 'aws-sdk';
 import { SqsAdapter } from './sqs-save-adn.adapter';
+import { URL_SQS } from '../../utils/constants';
 
+/**
+ * Class de la implementación del adaptador que sirve de conexión al servicio SQS
+ * @class
+ */
 @injectable()
 export class SqsAdampterImpl implements SqsAdapter {
 	sqs = new SQS();
 
-	sendMessage(request: rowType): Promise<any> {
+	/**
+	 * Funcion que hace el envío de mensajes a la cola sqs que conecta con la lambda de guardado de información en dynamo
+	 * @function sendMessage
+	 * @public
+	 * @param {rowType} request 
+	 */
+	sendMessage(request: rowType): void {
 		const params: SQS.SendMessageRequest = {
-			QueueUrl: 'https://sqs.us-east-2.amazonaws.com/489774021742/save-mutants-dynamo-sqs',
+			QueueUrl: URL_SQS,
 			MessageBody: JSON.stringify(request)
 		};
-		return new Promise((resolve, reject) => {
-			this.sqs
-				.sendMessage(params)
-				.promise()
-				.then((response) => {
-					resolve(response);
-				})
-				.catch((err) => reject(err));
-		});
+		this.sqs.sendMessage(params).promise().then(console.log).catch(console.error);
 	}
 }

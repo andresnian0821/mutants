@@ -2,10 +2,7 @@ import "reflect-metadata";
 import { DiscoverMutantController } from "../../src/controller/discover-mutants-controler";
 import { StatusCodes } from 'http-status-codes';
 import { Response } from "../../src/models/response.model";
-<<<<<<< HEAD
 import { Messages } from "../../src/utils/messages";
-=======
->>>>>>> 303de46f73823ddc3c8263dd6f77ee66e2101d6e
 
 describe("Controller test Success", () => {
   const serviceSpy = jasmine.createSpyObj("discoverMutanService", ["isMutant"]);
@@ -74,7 +71,6 @@ describe("Controller test Fail", () => {
     });
   });
 
-<<<<<<< HEAD
   it("Fail matrix validate", (done) => {
     const resultValidate = Promise.resolve(requestaFail.dna);
     validateSpy.and.returnValue(resultValidate);
@@ -82,16 +78,6 @@ describe("Controller test Fail", () => {
     controller.eventHandler(requestaFail).catch((err) => {
       expect(err.message).toEqual(Messages.MATRIX_LENGHT_FAIL);
       done();
-=======
-  it("Fail matrix validate", () => {
-    const result = Promise.reject(false);
-    const resultValidate = Promise.resolve(requestaFail.dna);
-    isMutantSpy.and.returnValue(result);
-    validateSpy.and.returnValue(resultValidate);
-
-    controller.eventHandler(requestaFail).catch((err) => {
-      expect(err).toEqual(false);
->>>>>>> 303de46f73823ddc3c8263dd6f77ee66e2101d6e
     });
   })
 })

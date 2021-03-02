@@ -1,70 +1,88 @@
 import { DiscoverMutantService } from './discover-mutants.service';
-import { SqsAdapter } from '../adapter/sqs/sqs-save-adn.adapter'
+import { SqsAdapter } from '../adapter/sqs/sqs-save-adn.adapter';
 import { CONSTANTS, ADAPTERS } from '../utils/constants';
-import { itemType } from '../models/dynamo-types';
 import { injectable, inject } from 'inversify';
-import { from } from 'rxjs';
+import { from, Observable, zip } from 'rxjs';
+import { map } from 'rxjs/operators';
 
+/**
+ * Class DiscoverMutantImplService para crear instancia del servicio
+ * @class
+ */
 @injectable()
 export class DiscoverMutantImplService implements DiscoverMutantService {
+	/**
+	 * @constructs
+	 * @param sqsAdapter 
+	 */
 	constructor(@inject(ADAPTERS.SQSAdapter) private sqsAdapter: SqsAdapter) {}
 
+	/**
+	 * Funcion principal del servicio para determinar si la cadena es de un mutante o no
+	 * @function isMutant
+	 * @public
+	 * @param {string[]} adn 
+	 * @returns {Promise<boolean>} true si es mutante false en caso contrario
+	 */
 	isMutant(adn: string[]): Promise<boolean> {
 		return new Promise((resolve, reject) => {
-			console.log("ADN", adn);
-			let arrayConcat: any[] = [];
-			arrayConcat = arrayConcat.concat(adn);
-			let ocurrancies = 0;
-			this.createColumnsFromRows(adn)
-				.then((adnColumns: any) => {
-					arrayConcat = arrayConcat.concat(adnColumns);
-					return this.createDiagonalsFromRows(adn);
-				})
-				.then((diagonalAdnTop: any) => {
-					arrayConcat = arrayConcat.concat(diagonalAdnTop);
-					return this.createDiagonalsFromColumns(adn);
-				})
-				.then((diagonalAdnBottom: any) => {
-					arrayConcat = arrayConcat.concat(diagonalAdnBottom);
-					console.log(arrayConcat)
-					return this.validateadnArray(arrayConcat);
-				})
-				.then((adnValidation: any) => {
-					ocurrancies = adnValidation;
-					return this.sqsAdapter.sendMessage({
+			console.log('ADN', adn);
+			zip(
+				this.createDiagonalsFromColumns(adn),
+				this.createDiagonalsFromRows(adn),
+				this.createColumnsFromRows(adn)
+			)
+				.pipe(map((val: any) => [].concat.apply(adn, val)))
+				.subscribe((value) => {
+					console.log(value);
+					const ocurrancies = this.validateadnArray(value)
+					this.sqsAdapter.sendMessage({
 						adn: adn,
 						isMutant: ocurrancies > 1 ? true : false
-					})
-				})
-				.then((responseSqs: itemType) => {
-					console.log("=====", responseSqs)
-					ocurrancies > 1 ? resolve(true) : resolve(false);
-				})
-				.catch((err) => reject(err));
-		})
-	}
-
-	private validateadnArray(arrayadn: string[]): Promise<number> {
-		return new Promise((resolve, reject) => {
-			let counterSequence = 0;
-			try {
-				from(arrayadn).subscribe((adn) => {
-					if (
-						adn.includes(CONSTANTS.AAAA) || adn.includes(CONSTANTS.CCCC) ||
-						adn.includes(CONSTANTS.GGGG) || adn.includes(CONSTANTS.TTTT)
-					) {
-						counterSequence++;
-					}
+					});
+					resolve(ocurrancies > 1 ? true : false)
+				}, (err) => {
+					reject(false);
 				});
-				resolve(counterSequence);
-			} catch (error) {
-				reject(error);
-			}
 		});
 	}
 
+	/**
+	 * Funcion que valida un array de strings y determina si en las cadenas está 
+	 * alguno de los arrays validos para determinar si es mutante
+	 * @function validateadnArray
+	 * @private
+	 * @param {string[]} adn 
+	 * @returns {number} numero de ocurrencias de los string de mutante
+	 */
+	private validateadnArray(arrayadn: string[]): number {
+		let counterSequence = 0;
+		try {
+			from(arrayadn).subscribe((adn) => {
+				if (
+					adn.includes(CONSTANTS.AAAA) ||
+					adn.includes(CONSTANTS.CCCC) ||
+					adn.includes(CONSTANTS.GGGG) ||
+					adn.includes(CONSTANTS.TTTT)
+				) {
+					counterSequence++;
+				}
+			});
+			return counterSequence;
+		} catch (error) {
+			return error;
+		}
+	}
+
+	/**
+	 * Funcion que transforma un array de filas en un array de columnas
+	 * @function createColumnsFromRows
+	 * @private
+	 * @param {string[]} adn 
+	 * @returns {Observable<string[]>} array de string correspondiente a columnas
+	 */
 	private createColumnsFromRows(arrayadn: string[]) {
-		return new Promise((resolve, reject) => {
+		return new Observable<string[]>((subscriber) => {
 			try {
 				let lengthArray = arrayadn.length;
 				let arrayFull = arrayadn.join('');
@@ -80,24 +98,34 @@ export class DiscoverMutantImplService implements DiscoverMutantService {
 					}
 					arrayColumn.push(string);
 				}
-				resolve(arrayColumn);
+				subscriber.next(arrayColumn);
 			} catch (error) {
-				reject(error);
+				subscriber.error(error);
+			} finally {
+				subscriber.complete();
 			}
 		});
 	}
 
+	/**
+	 * Funcion que de un array de string que representan las filas obtiene un 
+	 * array de string correspondiente a las diagonales ascendentes
+	 * @function createDiagonalsFromRows
+	 * @private
+	 * @param {string[]} adn 
+	 * @returns {Observable<string[]>} array de string correspondiente a diagonales ascendente
+	 */
 	private createDiagonalsFromRows(arrayadn: string[]) {
-		return new Promise((resolve, reject) => {
-      try {
-				let arrayDiagonalTop = []
-				let countInverse = arrayadn.length-1;
-        for (let idxCol = 0; idxCol < arrayadn.length - 3; idxCol++) {
+		return new Observable((subscriber) => {
+			try {
+				let arrayDiagonalTop = [];
+				let countInverse = arrayadn.length - 1;
+				for (let idxCol = 0; idxCol < arrayadn.length - 3; idxCol++) {
 					let strPrin = '';
 					let strSec = '';
 					let counterIdxColPrin = idxCol;
 					let counterIdxColSec = countInverse;
-          for (let idxRow = 0; idxRow < arrayadn.length; idxRow++) {
+					for (let idxRow = 0; idxRow < arrayadn.length; idxRow++) {
 						strPrin += arrayadn[idxRow].charAt(counterIdxColPrin);
 						strSec += arrayadn[idxRow].charAt(counterIdxColSec);
 						counterIdxColPrin++;
@@ -106,37 +134,49 @@ export class DiscoverMutantImplService implements DiscoverMutantService {
 					countInverse--;
 					arrayDiagonalTop.push(strPrin);
 					arrayDiagonalTop.push(strSec);
-        }
-        resolve(arrayDiagonalTop)
+				}
+				subscriber.next(arrayDiagonalTop);
 			} catch (error) {
-				reject(error);
+				subscriber.error(error);
+			} finally {
+				subscriber.complete();
 			}
 		});
 	}
 
+	/**
+	 * Funcion que de un array de string que representan las filas obtiene un 
+	 * array de string correspondiente a las diagonales ascendentes
+	 * @function createDiagonalsFromColumns
+	 * @public
+	 * @param {string[]} adn 
+	 * @returns {Observable<string[]>} array de string correspondiente a diagonales descendentes
+	 */
 	private createDiagonalsFromColumns(arrayadn: string[]) {
-    return new Promise((resolve, reject) => {
-      try {
-				let arrayDiagonalBottom = []
-				let countInverse = arrayadn.length-1;
-        for (let idxRow = 1; idxRow < arrayadn.length - 3; idxRow++) {
-          let strPrin = '';
+		return new Observable((subscriber) => {
+			try {
+				let arrayDiagonalBottom = [];
+				let countInverse = arrayadn.length - 1;
+				for (let idxRow = 1; idxRow < arrayadn.length - 3; idxRow++) {
+					let strPrin = '';
 					let strSec = '';
 					let counterIdxRow = idxRow;
 					let counterIdxRowSec = countInverse;
-          for (let idxCol = 0; idxCol < arrayadn.length - idxRow; idxCol++) {
-						strPrin += arrayadn[counterIdxRow].charAt(idxCol)
-						strSec += arrayadn[counterIdxRow].charAt(counterIdxRowSec)
+					for (let idxCol = 0; idxCol < arrayadn.length - idxRow; idxCol++) {
+						strPrin += arrayadn[counterIdxRow].charAt(idxCol);
+						strSec += arrayadn[counterIdxRow].charAt(counterIdxRowSec);
 						counterIdxRow++;
 						counterIdxRowSec--;
 					}
-					arrayDiagonalBottom.push(strPrin)
-					arrayDiagonalBottom.push(strSec)
-        }
-        resolve(arrayDiagonalBottom);
+					arrayDiagonalBottom.push(strPrin);
+					arrayDiagonalBottom.push(strSec);
+				}
+				subscriber.next(arrayDiagonalBottom);
 			} catch (error) {
-				reject(error);
+				subscriber.error(error);
+			} finally {
+				subscriber.complete();
 			}
-    });
+		});
 	}
 }
