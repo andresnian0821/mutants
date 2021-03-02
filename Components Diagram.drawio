@@ -1,0 +1,22 @@
+<mxfile host="app.diagrams.net" modified="2021-03-01T18:09:20.462Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36" etag="tjXpKWOAkCQeNMF2HNxd" version="14.3.2" type="github">
+  <diagram id="MDLnkBk9K9KRr2MbxcOK" name="Page-1">
+    <mxGraphModel dx="1426" dy="857" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="dq716zSRcyxIsHpeSHH_-3" value="Diagrama de componentes" style="shape=umlFrame;whiteSpace=wrap;html=1;width=120;height=30;boundedLbl=1;verticalAlign=middle;align=left;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="120" y="95" width="260" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="dq716zSRcyxIsHpeSHH_-1" value="discover-mutants" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="170" y="170" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="dq716zSRcyxIsHpeSHH_-4" value="get-stadistics-mutants" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="170" y="250" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="dq716zSRcyxIsHpeSHH_-5" value="save-adn" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="170" y="340" width="150" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
